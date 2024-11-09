@@ -11,7 +11,7 @@ class ConexionBD:
                 self.conn = mysql.connector.connect(
                     host="localhost",
                     user="root",
-                    password="1597845",
+                    password="",
                     database="iestudiar"
                 )
             except mysql.connector.Error as err:
