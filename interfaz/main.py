@@ -4,6 +4,8 @@ from PIL import Image, ImageTk
 from conexion import *
 from usuario import verificar_usuario
 from menu import crear_menu_materias
+import sys
+import os
 
 class IngresoUsuario:
     def __init__(self):
@@ -12,6 +14,10 @@ class IngresoUsuario:
         self.ventana.geometry("1280x72230")
         # Cargar la imagen de fondo
         self.cargar_imagen_fondo()
+
+        # Si ocurrió un error y la ventana se destruyó, salimos inmediatamente
+        if not self.ventana.winfo_exists():
+            sys.exit()
 
         # Crear un canvas para la imagen de fondo
         self.canvas = tk.Canvas(self.ventana, width=800, height=600)
@@ -31,11 +37,15 @@ class IngresoUsuario:
 
     def cargar_imagen_fondo(self):
         try:
-            self.imagen_original = Image.open('imagenes/ingreso-alumnos.png')  # Cambia "fondo.png" por tu imagen
+            # Calcula la ruta absoluta de la imagen: sube un nivel y entra en la carpeta 'imagenes'
+            ruta_imagen = os.path.join(os.path.dirname(__file__), "..", "imagenes", "ingreso-alumnos.png")
+            self.imagen_original = Image.open(ruta_imagen)
             self.imagen_fondo = ImageTk.PhotoImage(self.imagen_original)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo cargar la imagen de fondo: {e}")
             self.ventana.destroy()
+            import sys
+            sys.exit()
 
     def crear_widgets(self):
         # Estilo personalizado para la entrada
@@ -49,13 +59,13 @@ class IngresoUsuario:
         self.entrada.place(relx=0.265, rely=0.582, anchor="center")
 
         try:
-            imagen_boton = Image.open(r"C:\Users\laufe\OneDrive\Escritorio\programacion\practica\imagenes\boton-ingresar.png")  # Cambia por tu ruta
-            self.imagen_boton_original = imagen_boton.resize((180, 59))  # Ajustar el tamaño si es necesario
+            imagen_boton = Image.open(r"C:\Users\laufe\OneDrive\Escritorio\programacion\practica\imagenes\boton-ingresar.png")
+            self.imagen_boton_original = imagen_boton.resize((180, 59))
             self.imagen_boton_tk = ImageTk.PhotoImage(self.imagen_boton_original)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo cargar la imagen del botón: {e}")
             self.ventana.destroy()
-            return
+            sys.exit()
 
         # Crear un Label que actúe como botón
         self.boton_imagen = tk.Label(self.ventana, image=self.imagen_boton_tk, bg='#f6f6f6')
