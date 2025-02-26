@@ -68,9 +68,9 @@ def redraw_screen():
     width, height = screen.get_size()
     bg_scaled = pygame.transform.scale(background, (width, height))
     screen.blit(bg_scaled, (0, 0))
-    char_resized = pygame.transform.scale(character, (width // 6, height // 3))
+    char_resized = pygame.transform.scale(character, (width // 3, height // 3))
     char_rect = char_resized.get_rect()
-    char_rect.left = width // 8 - char_rect.width // 2
+    char_rect.left = width // 4 - char_rect.width // 2
     char_rect.centery = height // 2
     screen.blit(char_resized, char_rect)
 

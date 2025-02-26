@@ -1,6 +1,10 @@
+import os
+import sys
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
+
+# Agregamos la carpeta padre (practica/) al path para poder importar CRUD
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from CRUD import CRUD
 
 class Interfaz:
@@ -22,7 +26,7 @@ class Interfaz:
         frame_datos.pack(fill="x", padx=10, pady=10)
 
         # Etiquetas y campos de entrada
-        ttk.Label(frame_datos, text="DNI:").grid(row=0, column=0, padx=5, pady=5)
+        ttk.Label(frame_datos, text="DNI (8 dígitos):").grid(row=0, column=0, padx=5, pady=5)
         self.entry_dni = ttk.Entry(frame_datos)
         self.entry_dni.grid(row=0, column=1, padx=5, pady=5)
 
@@ -70,42 +74,78 @@ class Interfaz:
         self.mostrar_ocultar_tabla(False)
 
     def agregar_usuario(self):
-        dni = self.entry_dni.get()
-        nombre = self.entry_nombre.get()
-        grado = self.combo_grado.get()
+        dni = self.entry_dni.get().strip()
+        nombre = self.entry_nombre.get().strip()
+        grado = self.combo_grado.get().strip()
+
+        if not dni or not nombre or not grado:
+            messagebox.showerror("Error", "Todos los campos son obligatorios.")
+            return
+
+        if not (dni.isdigit() and len(dni) == 8):
+            messagebox.showerror("Error", "El DNI debe contener exactamente 8 dígitos numéricos.")
+            return
+
         success, message = self.crud.agregar_usuario(dni, nombre, grado)
         messagebox.showinfo("Resultado", message)
         if success:
             self.actualizar_lista()
 
     def editar_usuario(self):
-        dni = self.entry_dni.get()
-        nombre = self.entry_nombre.get()
-        grado = self.combo_grado.get()
+        dni = self.entry_dni.get().strip()
+        nombre = self.entry_nombre.get().strip()
+        grado = self.combo_grado.get().strip()
+
+        if not dni or not nombre or not grado:
+            messagebox.showerror("Error", "Todos los campos son obligatorios.")
+            return
+
+        if not (dni.isdigit() and len(dni) == 8):
+            messagebox.showerror("Error", "El DNI debe contener exactamente 8 dígitos numéricos.")
+            return
+
+        # Verificar si el usuario existe antes de editar
+        registros = self.crud.buscar_usuarios("", dni, "")
+        if not registros:
+            messagebox.showwarning("Advertencia", "El usuario no existe.")
+            return
+
         success, message = self.crud.editar_usuario(dni, nombre, grado)
         messagebox.showinfo("Resultado", message)
         if success:
             self.actualizar_lista()
 
     def eliminar_usuario(self):
-        dni = self.entry_dni.get()
+        dni = self.entry_dni.get().strip()
+        if not dni:
+            messagebox.showerror("Error", "Debe ingresar el DNI para eliminar un usuario.")
+            return
+
+        if not (dni.isdigit() and len(dni) == 8):
+            messagebox.showerror("Error", "El DNI debe contener exactamente 8 dígitos numéricos.")
+            return
+
+        # Verificar si el usuario existe antes de eliminar
+        registros = self.crud.buscar_usuarios("", dni, "")
+        if not registros:
+            messagebox.showwarning("Advertencia", "El usuario no existe.")
+            return
+
         success, message = self.crud.eliminar_usuario(dni)
         messagebox.showinfo("Resultado", message)
         if success:
             self.actualizar_lista()
 
     def actualizar_lista(self):
-        filtro_nombre = self.entry_filtro_nombre.get()
-        filtro_dni = self.entry_filtro_dni.get()
-        filtro_grado = self.combo_filtro_grado.get()
+        filtro_nombre = self.entry_filtro_nombre.get().strip()
+        filtro_dni = self.entry_filtro_dni.get().strip()
+        filtro_grado = self.combo_filtro_grado.get().strip()
 
-        # Verificar si al menos un filtro está completado
-        if not filtro_nombre and not filtro_dni and not filtro_grado:
-            messagebox.showwarning("Advertencia", "Debe aplicar al menos un filtro de búsqueda")
-            return
-
+        # Si no se aplican filtros, mostrar todos los registros
         try:
             registros = self.crud.buscar_usuarios(filtro_nombre, filtro_dni, filtro_grado)
+            if not registros:
+                messagebox.showinfo("Información", "No se encontraron usuarios con esos criterios.")
             self.mostrar_datos(registros)
             self.mostrar_ocultar_tabla(len(registros) > 0)
         except Exception as e:
@@ -129,7 +169,7 @@ class Interfaz:
             
             self.entry_nombre.delete(0, tk.END)
             self.entry_nombre.insert(0, datos[1])
-
+    
             self.combo_grado.set(datos[2])
         except IndexError:
             pass  # No hay selección
